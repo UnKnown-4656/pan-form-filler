@@ -1,0 +1,68 @@
+{
+  "PAN_FORM_V1": {
+    "description": "PAN Card Application Form 49A - Version 1",
+    "page_size": "A4",
+    "fields": {
+      "photo": {
+        "page": 0,
+        "x": 450,
+        "y": 120,
+        "width": 120,
+        "height": 150,
+        "required": true
+      },
+      "signature": {
+        "page": 0,
+        "x": 450,
+        "y": 680,
+        "width": 120,
+        "height": 50,
+        "required": true
+      }
+    }
+  },
+  "AADHAAR_CORRECTION_V1": {
+    "description": "Aadhaar Correction/Update Form",
+    "page_size": "A4",
+    "fields": {
+      "photo": {
+        "page": 0,
+        "x": 400,
+        "y": 100,
+        "width": 130,
+        "height": 160,
+        "required": true
+      },
+      "signature": {
+        "page": 1,
+        "x": 350,
+        "y": 700,
+        "width": 180,
+        "height": 60,
+        "required": true
+      }
+    }
+  },
+  "VOTER_ID_FORM_V1": {
+    "description": "Voter ID Application Form 6",
+    "page_size": "A4",
+    "fields": {
+      "photo": {
+        "page": 0,
+        "x": 460,
+        "y": 80,
+        "width": 100,
+        "height": 130,
+        "required": true
+      },
+      "signature": {
+        "page": 0,
+        "x": 400,
+        "y": 750,
+        "width": 160,
+        "height": 55,
+        "required": true
+      }
+    }
+  }
+}

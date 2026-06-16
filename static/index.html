@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSC AutoFill Portal — Premium Document Auto-Completion</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div class="brand-text">
+                    <h1>CSC AutoFill</h1>
+                    <span class="subtext">Document Completion Engine</span>
+                </div>
+            </div>
+            
+            <div class="status-panel">
+                <div id="health-badge" class="badge badge-offline">
+                    <span class="dot"></span>
+                    <span id="health-text">Checking System Status...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <div class="dashboard-grid" id="dashboard-view">
+            
+            <!-- Left Side: Control panel -->
+            <aside class="control-panel card">
+                <div class="card-header">
+                    <h2>Configuration & Upload</h2>
+                    <p class="section-desc">Provide scanned files and select form targets.</p>
+                </div>
+                
+                <form id="processing-form" class="upload-form">
+                    <!-- Source PDF Upload -->
+                    <div class="form-group">
+                        <label class="form-label">1. Scanned Document (Aadhaar, PAN, SSLC, etc.)</label>
+                        <div class="drop-zone" id="source-dropzone">
+                            <input type="file" id="source_pdf" name="source_pdf" accept=".pdf" required class="file-input">
+                            <div class="drop-zone-content">
+                                <svg class="upload-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <p class="drop-prompt">Drag & drop your scanned PDF here</p>
+                                <span class="browse-btn">Browse File</span>
+                                <span class="file-info" id="source-file-info">No file selected</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Target Form PDF Upload -->
+                    <div class="form-group">
+                        <label class="form-label">2. Blank Form Template (PDF to fill)</label>
+                        <div class="drop-zone" id="form-dropzone">
+                            <input type="file" id="form_pdf" name="form_pdf" accept=".pdf" class="file-input">
+                            <div class="drop-zone-content">
+                                <svg class="upload-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="11" y2="17"/></svg>
+                                <p class="drop-prompt">Drag & drop the blank Form PDF here</p>
+                                <span class="browse-btn">Browse File</span>
+                                <span class="file-info" id="form-file-info">No file selected</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Template Selection -->
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label for="template_name" class="form-label" style="margin-bottom: 0;">3. Target Layout Template</label>
+                            <button type="button" id="design-template-btn" class="btn btn-secondary btn-sm">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                                Design
+                            </button>
+                        </div>
+                        <div class="select-wrapper">
+                            <select id="template_name" name="template_name" required>
+                                <option value="" disabled selected>Loading available templates...</option>
+                            </select>
+                            <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <p class="input-hint" id="template-desc">Choose form schema configuration.</p>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="action-buttons">
+                        <button type="button" id="extract-btn" class="btn btn-secondary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                            Extract Only
+                        </button>
+                        <button type="submit" id="process-btn" class="btn btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            Auto-Fill Form
+                        </button>
+                    </div>
+                </form>
+            </aside>
+
+            <!-- Center/Right Panel: Results & Preview -->
+            <main class="preview-panel">
+                
+                <!-- Welcome/Instruction Card -->
+                <div class="welcome-card card" id="welcome-view">
+                    <div class="hero-graphic">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M21 12H3"/><path d="M12 3v18"/></svg>
+                    </div>
+                    <h2>Automated PDF Completion</h2>
+                    <p>Welcome to the CSC Service Center Auto-Fill Suite. Extract passport photos and signatures from scanned attachments, and stamp them onto application forms instantly.</p>
+                    
+                    <div class="instructions-steps">
+                        <div class="step">
+                            <span class="step-num">1</span>
+                            <h3>Upload Scanned Page(s)</h3>
+                            <p>Upload the scanned identity bundle containing the photo/signature.</p>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">2</span>
+                            <h3>Select Template</h3>
+                            <p>Select which type of application form you want to fill.</p>
+                        </div>
+                        <div class="step">
+                            <span class="step-num">3</span>
+                            <h3>Fill & Review</h3>
+                            <p>Verify extracted features or export the complete, stamped PDF form.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Processing Loading Card -->
+                <div class="loading-card card hidden" id="loading-view">
+                    <div class="spinner-container">
+                        <div class="double-bounce1"></div>
+                        <div class="double-bounce2"></div>
+                    </div>
+                    <h2 id="loading-title">Processing Document...</h2>
+                    <p id="loading-desc">Extracting components and performing layout analysis. This will take under 2 seconds.</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-indicator"></div>
+                    </div>
+                </div>
+
+                <!-- Results Section (Cropped Assets + PDF Preview) -->
+                <div class="results-container hidden" id="results-view">
+                    
+                    <!-- Extracted Assets Grid -->
+                    <section class="extracted-assets">
+                        <h2 class="section-title">Extracted Features</h2>
+                        <div class="assets-grid">
+                            
+                            <!-- Passport Photo Card -->
+                            <div class="asset-card card" id="photo-card">
+                                <div class="asset-header">
+                                    <h3>Passport Photograph</h3>
+                                    <span class="conf-badge" id="photo-conf">--%</span>
+                                </div>
+                                <div class="image-preview-container">
+                                    <div id="photo-placeholder" class="img-placeholder">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        <p>Not found</p>
+                                    </div>
+                                    <img id="photo-img" src="" alt="Cropped Photo" class="hidden">
+                                </div>
+                                <div class="asset-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Page:</span>
+                                        <span class="detail-val" id="photo-page">--</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Region (BBox):</span>
+                                        <span class="detail-val" id="photo-bbox">--</span>
+                                    </div>
+                                </div>
+                                <a id="photo-dl" href="#" download="cropped_photo.png" class="btn btn-secondary btn-sm disabled">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Download Image
+                                </a>
+                            </div>
+
+                            <!-- Handwritten Signature Card -->
+                            <div class="asset-card card" id="sig-card">
+                                <div class="asset-header">
+                                    <h3>Handwritten Signature</h3>
+                                    <span class="conf-badge" id="sig-conf">--%</span>
+                                </div>
+                                <div class="image-preview-container sig-bg">
+                                    <div id="sig-placeholder" class="img-placeholder">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                        <p>Not found</p>
+                                    </div>
+                                    <img id="sig-img" src="" alt="Cropped Signature" class="hidden">
+                                </div>
+                                <div class="asset-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Page:</span>
+                                        <span class="detail-val" id="sig-page">--</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Region (BBox):</span>
+                                        <span class="detail-val" id="sig-bbox">--</span>
+                                    </div>
+                                </div>
+                                <a id="sig-dl" href="#" download="cropped_signature.png" class="btn btn-secondary btn-sm disabled">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Download Image
+                                </a>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    <!-- Stamped PDF output -->
+                    <section class="pdf-output-section hidden" id="pdf-output-card">
+                        <div class="card fill-success-card">
+                            <div class="success-icon-banner">
+                                <div class="success-ring">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                </div>
+                                <div>
+                                    <h2>Layout Filled Successfully!</h2>
+                                    <p>The photo and signature have been placed onto the application form.</p>
+                                </div>
+                            </div>
+                            <div class="success-actions">
+                                <a href="#" id="pdf-view-btn" target="_blank" class="btn btn-secondary">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    Preview Form PDF
+                                </a>
+                                <a href="#" id="pdf-download-btn" download="" class="btn btn-primary">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Download Completed Form
+                                </a>
+                            </div>
+                            <div class="pdf-frame-wrapper" id="pdf-frame-container">
+                                <iframe id="pdf-iframe" src="" class="pdf-iframe"></iframe>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+            </main>
+
+        </div>
+
+        <!-- Template Designer View -->
+        <div class="template-designer-view hidden" id="template-designer-view">
+            <div class="template-designer-container">
+                <!-- Designer Header -->
+                <div class="designer-header card">
+                    <div>
+                        <h2>Template Designer</h2>
+                        <p class="section-desc">Design and adjust form field coordinates visually</p>
+                    </div>
+                    <button id="back-to-dashboard-btn" class="btn btn-secondary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                        Back to Dashboard
+                    </button>
+                </div>
+
+                <!-- Designer Body -->
+                <div class="designer-body">
+                    <!-- Left Panel: Canvas & Controls -->
+                    <div class="designer-canvas-section card">
+                        <!-- PDF Upload -->
+                        <div class="form-group">
+                            <label class="form-label">1. Upload Blank Form PDF</label>
+                            <div class="drop-zone" id="designer-form-dropzone">
+                                <input type="file" id="designer-form-pdf" accept=".pdf" class="file-input">
+                                <div class="drop-zone-content">
+                                    <svg class="upload-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="11" y2="17"/></svg>
+                                    <p class="drop-prompt">Drag & drop blank form PDF here</p>
+                                    <span class="browse-btn">Browse File</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Page Navigation -->
+                        <div class="page-navigation" id="page-navigation" style="display: none;">
+                            <button id="prev-page-btn" class="btn btn-secondary btn-sm">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                            </button>
+                            <span id="page-indicator">Page 1 of 1</span>
+                            <button id="next-page-btn" class="btn btn-secondary btn-sm">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                            </button>
+                        </div>
+
+                        <!-- Canvas Container -->
+                        <div class="canvas-wrapper" id="canvas-wrapper">
+                            <div class="canvas-container" id="canvas-container">
+                                <img id="pdf-page-image" src="" alt="PDF Page" style="display: none;">
+                                <!-- Field boxes will be added here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Add Field Buttons -->
+                        <div class="add-field-buttons">
+                            <button id="add-photo-btn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                + Photo Field
+                            </button>
+                            <button id="add-signature-btn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                + Signature Field
+                            </button>
+                            <button id="delete-field-btn" class="btn btn-secondary" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3);">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                Delete Selected
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Properties & Save -->
+                    <div class="designer-properties-section card">
+                        <div class="card-header">
+                            <h3>Template Properties</h3>
+                        </div>
+                        
+                        <!-- Template Name -->
+                        <div class="form-group">
+                            <label class="form-label">Template Name</label>
+                            <input type="text" id="template-name-input" class="text-input" placeholder="e.g., PAN_FORM_V2">
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <input type="text" id="template-desc-input" class="text-input" placeholder="Brief description of this form">
+                        </div>
+
+                        <!-- Selected Field Properties -->
+                        <div class="field-properties" id="field-properties" style="display: none;">
+                            <div class="card-header">
+                                <h4>Selected Field Properties</h4>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Field Name</label>
+                                <input type="text" id="field-name-input" class="text-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Page (0-based)</label>
+                                <input type="number" id="field-page-input" class="text-input" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">X (points)</label>
+                                <input type="number" id="field-x-input" class="text-input" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Y (points)</label>
+                                <input type="number" id="field-y-input" class="text-input" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Width (points)</label>
+                                <input type="number" id="field-width-input" class="text-input" min="1" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Height (points)</label>
+                                <input type="number" id="field-height-input" class="text-input" min="1" step="0.1">
+                            </div>
+                        </div>
+
+                        <!-- Fields List -->
+                        <div class="fields-list" id="fields-list">
+                            <div class="card-header">
+                                <h4>Fields List</h4>
+                            </div>
+                            <div id="fields-list-container">
+                                <p class="input-hint" style="margin: 8px 0;">No fields added yet</p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="designer-actions">
+                            <button id="load-template-btn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Load Template
+                            </button>
+                            <button id="save-template-btn" class="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                Save Template
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+</html>
