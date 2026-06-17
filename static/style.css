@@ -913,28 +913,56 @@ select:focus {
     border-color: #a855f7;
 }
 
-.field-box .resize-handle.top-left {
+.field-box .resize-handle.nw {
     top: -5px;
     left: -5px;
     cursor: nwse-resize;
 }
 
-.field-box .resize-handle.top-right {
+.field-box .resize-handle.ne {
     top: -5px;
     right: -5px;
     cursor: nesw-resize;
 }
 
-.field-box .resize-handle.bottom-left {
+.field-box .resize-handle.sw {
     bottom: -5px;
     left: -5px;
     cursor: nesw-resize;
 }
 
-.field-box .resize-handle.bottom-right {
+.field-box .resize-handle.se {
     bottom: -5px;
     right: -5px;
     cursor: nwse-resize;
+}
+
+.field-box .resize-handle.n {
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.field-box .resize-handle.s {
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.field-box .resize-handle.w {
+    left: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+.field-box .resize-handle.e {
+    right: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: ew-resize;
 }
 
 /* Field label */
