@@ -1085,12 +1085,24 @@ select:focus {
     z-index: 10;
 }
 
+.designer-properties-section {
+    position: relative;
+    z-index: 10;
+}
+
 .template-name-input-wrapper,
 .template-desc-input-wrapper {
     display: flex;
     flex-direction: column;
     gap: 8px;
     margin-bottom: 16px;
+    position: relative;
+    z-index: 20;
+}
+
+.template-name-input-wrapper .text-input,
+.template-desc-input-wrapper .text-input {
+    pointer-events: auto;
 }
 
 .template-name-input-wrapper label,
