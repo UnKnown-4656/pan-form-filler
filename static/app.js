@@ -477,9 +477,9 @@ async function renderFirstPage(file) {
         if (!res.ok) throw new Error('Failed to render page');
         
         // Get page dimensions from headers
-        state.designer.pageWidthPts = parseFloat(res.headers.get('X-Page-Width'));
-        state.designer.pageHeightPts = parseFloat(res.headers.get('X-Page-Height'));
-        state.designer.totalPages = parseInt(res.headers.get('X-Total-Pages'));
+        state.designer.pageWidthPts = parseFloat(res.headers.get('X-Page-Width-Points'));
+        state.designer.pageHeightPts = parseFloat(res.headers.get('X-Page-Height-Points'));
+        state.designer.totalPages = parseInt(res.headers.get('X-Page-Count'));
         state.designer.currentPage = 0;
         
         const blob = await res.blob();
@@ -517,8 +517,8 @@ async function navigatePage(delta) {
         if (!res.ok) throw new Error('Failed to render page');
         
         state.designer.currentPage = newPage;
-        state.designer.pageWidthPts = parseFloat(res.headers.get('X-Page-Width'));
-        state.designer.pageHeightPts = parseFloat(res.headers.get('X-Page-Height'));
+        state.designer.pageWidthPts = parseFloat(res.headers.get('X-Page-Width-Points'));
+        state.designer.pageHeightPts = parseFloat(res.headers.get('X-Page-Height-Points'));
         
         const blob = await res.blob();
         const imgUrl = URL.createObjectURL(blob);

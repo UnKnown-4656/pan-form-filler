@@ -304,7 +304,7 @@ class TemplateEngine:
                 page.insert_image(
                     rect,
                     filename=str(image_path),
-                    keep_proportion=True,
+                    keep_proportion=False,
                     overlay=True,
                 )
 
@@ -379,7 +379,7 @@ class TemplateEngine:
                     field.x, field.y, field.right, field.bottom
                 )
                 page.insert_image(rect, filename=str(image_path),
-                                  keep_proportion=True, overlay=True)
+                                  keep_proportion=False, overlay=True)
                 
                 insertions_done += 1
 
