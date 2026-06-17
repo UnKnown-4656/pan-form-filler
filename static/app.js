@@ -280,6 +280,18 @@ async function handleExtract() {
 async function handleProcess() {
     showLoadingState('Filling Application Form...', 'Stamping extracted features onto the application form using the selected template.');
     try {
+        const selectElement = document.getElementById('template_name');
+        console.log('Select element:', selectElement);
+        console.log('Select value:', selectElement.value);
+        console.log('Select options:', Array.from(selectElement.options).map(o => ({ value: o.value, text: o.textContent, index: o.index, selected: o.selected })));
+        
+        const templateName = selectElement.value;
+        if (!templateName) {
+            alert('Please select a template');
+            hideLoadingState();
+            return;
+        }
+
         // First, call extract to get request_id and extracted images for the results view
         let extractData;
         try {
@@ -298,7 +310,7 @@ async function handleProcess() {
         // Now call process to get the filled PDF
         const formData = new FormData();
         formData.append('source_pdf', state.sourcePdfFile);
-        formData.append('template_name', document.getElementById('template_name').value);
+        formData.append('template_name', templateName);
         if (state.formPdfFile) {
             formData.append('form_pdf', state.formPdfFile);
         }
