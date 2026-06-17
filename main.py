@@ -142,6 +142,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Mount extracted files folder to serve the cropped image previews
 app.mount("/extracted", StaticFiles(directory=str(settings.EXTRACTED_DIR)), name="extracted")
 
+# Mount output files folder to serve filled form PDFs
+app.mount("/output", StaticFiles(directory=str(settings.OUTPUT_DIR)), name="output")
+
 # Serve index.html on root path
 @app.get("/", include_in_schema=False)
 async def read_index():

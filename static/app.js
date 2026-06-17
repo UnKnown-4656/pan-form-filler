@@ -256,9 +256,16 @@ async function handleExtract() {
     showLoadingState('Extracting Features...', 'Locating and isolating the passport photo and handwritten signature.');
     try {
         const formData = new FormData();
-        formData.append('file', state.sourcePdfFile);
+        formData.append('source_pdf', state.sourcePdfFile); // Changed from 'file' to 'source_pdf'
         const res = await fetch('/api/v1/extract', { method: 'POST', body: formData });
-        if (!res.ok) throw new Error('Extraction failed');
+        if (!res.ok) {
+            let errorText = 'Extraction failed';
+            try {
+                const errorJson = await res.json();
+                if (errorJson.detail) errorText = errorJson.detail;
+            } catch (e) { /* ignore */ }
+            throw new Error(errorText);
+        }
         const data = await res.json();
         state.currentRequest = data.request_id;
         showResults(data);
@@ -273,6 +280,22 @@ async function handleExtract() {
 async function handleProcess() {
     showLoadingState('Filling Application Form...', 'Stamping extracted features onto the application form using the selected template.');
     try {
+        // First, call extract to get request_id and extracted images for the results view
+        let extractData;
+        try {
+            const extractFormData = new FormData();
+            extractFormData.append('source_pdf', state.sourcePdfFile);
+            const extractRes = await fetch('/api/v1/extract', { method: 'POST', body: extractFormData });
+            if (!extractRes.ok) throw new Error('Extraction failed');
+            extractData = await extractRes.json();
+            state.currentRequest = extractData.request_id;
+            showResults(extractData); // Show extracted photo and signature
+        } catch (extractError) {
+            // If extract fails, still proceed to process? Or show error?
+            console.error('Extract failed:', extractError);
+        }
+
+        // Now call process to get the filled PDF
         const formData = new FormData();
         formData.append('source_pdf', state.sourcePdfFile);
         formData.append('template_name', document.getElementById('template_name').value);
@@ -280,17 +303,26 @@ async function handleProcess() {
             formData.append('form_pdf', state.formPdfFile);
         }
         const res = await fetch('/api/v1/process', { method: 'POST', body: formData });
-        if (!res.ok) throw new Error('Processing failed');
-        const data = await res.json();
-        state.currentRequest = data.request_id;
-        showResults(data);
-        if (data.output_file) {
-            document.getElementById('pdf-view-btn').href = '/output/' + data.output_file;
-            document.getElementById('pdf-download-btn').href = '/output/' + data.output_file;
-            document.getElementById('pdf-download-btn').download = data.output_file;
-            document.getElementById('pdf-iframe').src = '/output/' + data.output_file;
-            document.getElementById('pdf-output-card').classList.remove('hidden');
+        if (!res.ok) {
+            let errorText = 'Processing failed';
+            try {
+                const errorJson = await res.json();
+                if (errorJson.detail) errorText = errorJson.detail;
+            } catch (e) { /* ignore */ }
+            throw new Error(errorText);
         }
+
+        // Handle the PDF response
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        
+        // Show the PDF in the viewer and set download link
+        document.getElementById('pdf-view-btn').href = url;
+        document.getElementById('pdf-download-btn').href = url;
+        document.getElementById('pdf-download-btn').download = 'filled-form.pdf';
+        document.getElementById('pdf-iframe').src = url;
+        document.getElementById('pdf-output-card').classList.remove('hidden');
+
     } catch (e) {
         console.error(e);
         alert('Processing failed: ' + e.message);
