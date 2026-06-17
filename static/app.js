@@ -466,8 +466,14 @@ function addNewField(fieldType) {
     const id = generateFieldId();
     const defaultWidthPts = fieldType === 'photo' ? 150 : 200;
     const defaultHeightPts = fieldType === 'photo' ? 150 : 60;
+    
+    // Count existing fields of this type to give a unique name
+    const existingFields = Object.values(state.designer.fields).filter(f => f.type === fieldType);
+    const fieldNumber = existingFields.length + 1;
+    const fieldName = fieldNumber === 1 ? fieldType : `${fieldType}_${fieldNumber}`;
+    
     const field = {
-        id: id, type: fieldType, name: fieldType, page: state.designer.currentPage,
+        id: id, type: fieldType, name: fieldName, page: state.designer.currentPage,
         x: 50, y: 50, width: defaultWidthPts, height: defaultHeightPts, required: true
     };
     state.designer.fields[id] = field;
