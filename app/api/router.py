@@ -456,27 +456,40 @@ async def render_pdf_page(
 )
 async def health_check() -> HealthResponse:
     """Return system health status and loaded models."""
-    import cv2
-
     from app import __version__
 
-    service = get_service()
-    strategies = service.get_available_strategies()
-
-    return HealthResponse(
-        status="healthy",
-        version=__version__,
-        models_loaded={
-            "haar_cascade": "haar_cascade" in strategies.get("photo", []),
-            "dnn_resnet10": "dnn_ssd_resnet10" in strategies.get("photo", []),
-            "contour_analysis": "contour_analysis" in strategies.get("signature", []),
-        },
-        available_strategies=(
-            strategies.get("photo", []) + strategies.get("signature", [])
-        ),
-        uptime_seconds=round(time.time() - _start_time, 1),
-        templates_count=len(service.template_engine.list_templates()),
-    )
+    try:
+        # Try to import cv2 to check if it's working
+        import cv2
+        # Try to initialize the service
+        service = get_service()
+        strategies = service.get_available_strategies()
+        
+        return HealthResponse(
+            status="healthy",
+            version=__version__,
+            models_loaded={
+                "haar_cascade": "haar_cascade" in strategies.get("photo", []),
+                "dnn_resnet10": "dnn_ssd_resnet10" in strategies.get("photo", []),
+                "contour_analysis": "contour_analysis" in strategies.get("signature", []),
+            },
+            available_strategies=(
+                strategies.get("photo", []) + strategies.get("signature", [])
+            ),
+            uptime_seconds=round(time.time() - _start_time, 1),
+            templates_count=len(service.template_engine.list_templates()),
+        )
+    except Exception as e:
+        logger.error("Health check failed: %s", e, exc_info=True)
+        # Return degraded status instead of failing the whole request
+        return HealthResponse(
+            status="degraded",
+            version=__version__ if 'app' in locals() or 'app' in globals() else "unknown",
+            models_loaded={"haar_cascade": False, "dnn_resnet10": False, "contour_analysis": False},
+            available_strategies=[],
+            uptime_seconds=round(time.time() - _start_time, 1) if '_start_time' in locals() or '_start_time' in globals() else 0,
+            templates_count=0,
+        )
 
 
 # ── POST /cleanup ─────────────────────────────────────────────────────────────

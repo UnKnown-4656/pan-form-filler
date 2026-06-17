@@ -41,9 +41,12 @@ async function checkApiHealth() {
     try {
         const res = await fetch('/api/v1/health');
         const data = await res.json();
-        if (data.status === 'ok') {
+        if (data.status === 'healthy') {
             badge.className = 'badge badge-online';
             text.textContent = 'System Ready';
+        } else if (data.status === 'degraded') {
+            badge.className = 'badge badge-warning';
+            text.textContent = 'System Degraded';
         } else {
             badge.className = 'badge badge-offline';
             text.textContent = 'System Unhealthy';
