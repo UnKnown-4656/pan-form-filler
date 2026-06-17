@@ -135,41 +135,57 @@ function setupDropzone(dropzoneId, fileInfoId, onFileSelected) {
     const fileInput = dropzone.querySelector('input[type="file"]');
     const fileInfo = document.getElementById(fileInfoId);
     
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropzone.addEventListener(eventName, preventDefaults, false);
-    });
-    
-    function preventDefaults(e) {
+    // Clone and replace to prevent duplicate listeners
+    const newDropzone = dropzone.cloneNode(true);
+    dropzone.parentNode.replaceChild(newDropzone, dropzone);
+    const dz = newDropzone;
+    const fi = newDropzone.querySelector('input[type="file"]');
+
+    const preventDefaults = (e) => {
         e.preventDefault();
         e.stopPropagation();
-    }
-    
+    };
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dz.addEventListener(eventName, preventDefaults, false);
+    });
+
     ['dragenter', 'dragover'].forEach(eventName => {
-        dropzone.classList.add('dragover');
+        dz.addEventListener(eventName, () => dz.classList.add('dragover'), false);
     });
-    
+
     ['dragleave', 'drop'].forEach(eventName => {
-        dropzone.classList.remove('dragover');
+        dz.addEventListener(eventName, () => dz.classList.remove('dragover'), false);
     });
-    
-    dropzone.addEventListener('drop', (e) => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
+
+    const handleFile = (file) => {
+        fileInfo.textContent = `${file.name} (${formatBytes(file.size)})`;
+        fileInfo.classList.add('selected');
+        if (onFileSelected) onFileSelected(file);
+    };
+
+    dz.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
         if (files.length > 0) {
+            fi.files = files;
             handleFile(files[0]);
         }
-    });
-    
-    fileInput.addEventListener('change', (e) => {
+    }, false);
+
+    fi.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             handleFile(e.target.files[0]);
         }
     });
-    
-    function handleFile(file) {
-        fileInfo.textContent = `${file.name} (${formatBytes(file.size)})`;
-        fileInfo.classList.add('selected');
-        if (onFileSelected) onFileSelected(file);
+
+    // Make browse button trigger file input
+    const browseBtn = dz.querySelector('.browse-btn');
+    if (browseBtn) {
+        browseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fi.click();
+        });
     }
 }
 
@@ -394,17 +410,28 @@ function setupDesignerDropzone() {
     const fileInput = document.getElementById('designer-form-pdf');
     const fileInfo = document.getElementById('designer-file-info');
     
+    // Clone and replace to prevent duplicate listeners
+    const newDropzone = dropzone.cloneNode(true);
+    dropzone.parentNode.replaceChild(newDropzone, dropzone);
+    const dz = newDropzone;
+    const fi = newDropzone.querySelector('input[type="file"]');
+
+    const preventDefaults = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropzone.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+        dz.addEventListener(eventName, preventDefaults, false);
     });
-    
+
     ['dragenter', 'dragover'].forEach(eventName => {
-        dropzone.classList.add('dragover');
+        dz.addEventListener(eventName, () => dz.classList.add('dragover'), false);
     });
     ['dragleave', 'drop'].forEach(eventName => {
-        dropzone.classList.remove('dragover');
+        dz.addEventListener(eventName, () => dz.classList.remove('dragover'), false);
     });
-    
+
     const handleFile = async (file) => {
         state.designer.pdfData = file;
         fileInfo.textContent = `${file.name} (${formatBytes(file.size)})`;
@@ -412,15 +439,27 @@ function setupDesignerDropzone() {
         
         await renderFirstPage(file);
     };
-    
-    dropzone.addEventListener('drop', (e) => {
-        const file = e.dataTransfer.files[0];
-        if (file) handleFile(file);
-    });
-    
-    fileInput.addEventListener('change', (e) => {
+
+    dz.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fi.files = files;
+            handleFile(files[0]);
+        }
+    }, false);
+
+    fi.addEventListener('change', (e) => {
         if (e.target.files.length > 0) handleFile(e.target.files[0]);
     });
+
+    const browseBtn = dz.querySelector('.browse-btn');
+    if (browseBtn) {
+        browseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fi.click();
+        });
+    }
 }
 
 // Render first page of PDF
