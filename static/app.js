@@ -63,7 +63,13 @@ async function loadTemplates() {
     try {
         const res = await fetch('/api/v1/templates');
         const data = await res.json();
-        state.templates = data.templates || {};
+        
+        // Convert templates array to an object for state.templates
+        state.templates = {};
+        const templatesArray = data.templates || [];
+        templatesArray.forEach(tpl => {
+            state.templates[tpl.name] = tpl;
+        });
         
         select.innerHTML = '';
         const defaultOption = document.createElement('option');
@@ -73,10 +79,10 @@ async function loadTemplates() {
         defaultOption.textContent = 'Select a template...';
         select.appendChild(defaultOption);
         
-        Object.entries(state.templates).forEach(([name, tpl]) => {
+        templatesArray.forEach(tpl => {
             const option = document.createElement('option');
-            option.value = name;
-            option.textContent = name;
+            option.value = tpl.name;
+            option.textContent = tpl.name;
             option.dataset.description = tpl.description || 'No description';
             select.appendChild(option);
         });
