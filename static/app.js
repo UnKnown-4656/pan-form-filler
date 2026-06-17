@@ -134,12 +134,6 @@ function setupDropzone(dropzoneId, fileInfoId, onFileSelected) {
     const dropzone = document.getElementById(dropzoneId);
     const fileInput = dropzone.querySelector('input[type="file"]');
     const fileInfo = document.getElementById(fileInfoId);
-    
-    // Clone and replace to prevent duplicate listeners
-    const newDropzone = dropzone.cloneNode(true);
-    dropzone.parentNode.replaceChild(newDropzone, dropzone);
-    const dz = newDropzone;
-    const fi = newDropzone.querySelector('input[type="file"]');
 
     const preventDefaults = (e) => {
         e.preventDefault();
@@ -147,16 +141,12 @@ function setupDropzone(dropzoneId, fileInfoId, onFileSelected) {
     };
 
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dz.addEventListener(eventName, preventDefaults, false);
+        dropzone.addEventListener(eventName, preventDefaults, false);
     });
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dz.addEventListener(eventName, () => dz.classList.add('dragover'), false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dz.addEventListener(eventName, () => dz.classList.remove('dragover'), false);
-    });
+    dropzone.addEventListener('dragover', () => dropzone.classList.add('dragover'), false);
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'), false);
+    dropzone.addEventListener('drop', () => dropzone.classList.remove('dragover'), false);
 
     const handleFile = (file) => {
         fileInfo.textContent = `${file.name} (${formatBytes(file.size)})`;
@@ -164,27 +154,27 @@ function setupDropzone(dropzoneId, fileInfoId, onFileSelected) {
         if (onFileSelected) onFileSelected(file);
     };
 
-    dz.addEventListener('drop', (e) => {
+    dropzone.addEventListener('drop', (e) => {
         const files = e.dataTransfer.files;
         if (files.length > 0) {
-            fi.files = files;
+            fileInput.files = files;
             handleFile(files[0]);
         }
     }, false);
 
-    fi.addEventListener('change', (e) => {
+    fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             handleFile(e.target.files[0]);
         }
     });
 
     // Make browse button trigger file input
-    const browseBtn = dz.querySelector('.browse-btn');
+    const browseBtn = dropzone.querySelector('.browse-btn');
     if (browseBtn) {
         browseBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            fi.click();
+            fileInput.click();
         });
     }
 }
@@ -409,12 +399,6 @@ function setupDesignerDropzone() {
     const dropzone = document.getElementById('designer-form-dropzone');
     const fileInput = document.getElementById('designer-form-pdf');
     const fileInfo = document.getElementById('designer-file-info');
-    
-    // Clone and replace to prevent duplicate listeners
-    const newDropzone = dropzone.cloneNode(true);
-    dropzone.parentNode.replaceChild(newDropzone, dropzone);
-    const dz = newDropzone;
-    const fi = newDropzone.querySelector('input[type="file"]');
 
     const preventDefaults = (e) => {
         e.preventDefault();
@@ -422,15 +406,12 @@ function setupDesignerDropzone() {
     };
 
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dz.addEventListener(eventName, preventDefaults, false);
+        dropzone.addEventListener(eventName, preventDefaults, false);
     });
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dz.addEventListener(eventName, () => dz.classList.add('dragover'), false);
-    });
-    ['dragleave', 'drop'].forEach(eventName => {
-        dz.addEventListener(eventName, () => dz.classList.remove('dragover'), false);
-    });
+    dropzone.addEventListener('dragover', () => dropzone.classList.add('dragover'), false);
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'), false);
+    dropzone.addEventListener('drop', () => dropzone.classList.remove('dragover'), false);
 
     const handleFile = async (file) => {
         state.designer.pdfData = file;
@@ -440,24 +421,24 @@ function setupDesignerDropzone() {
         await renderFirstPage(file);
     };
 
-    dz.addEventListener('drop', (e) => {
+    dropzone.addEventListener('drop', (e) => {
         const files = e.dataTransfer.files;
         if (files.length > 0) {
-            fi.files = files;
+            fileInput.files = files;
             handleFile(files[0]);
         }
     }, false);
 
-    fi.addEventListener('change', (e) => {
+    fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) handleFile(e.target.files[0]);
     });
 
-    const browseBtn = dz.querySelector('.browse-btn');
+    const browseBtn = dropzone.querySelector('.browse-btn');
     if (browseBtn) {
         browseBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            fi.click();
+            fileInput.click();
         });
     }
 }
@@ -538,6 +519,11 @@ async function navigatePage(delta) {
 
 // Add new field
 function addNewField(fieldType) {
+    if (!state.designer.pdfData) {
+        alert('Please upload a PDF first');
+        return;
+    }
+
     const id = generateFieldId();
     const defaultWidthPts = fieldType === 'photo' ? 150 : 200;
     const defaultHeightPts = fieldType === 'photo' ? 150 : 60;
@@ -572,7 +558,6 @@ function renderAllFields() {
     if (!state.designer.pageWidthPts || !state.designer.pageHeightPts) return;
     
     // Calculate scale factor
-    const imgRect = img.getBoundingClientRect();
     const scaleX = img.clientWidth / state.designer.pageWidthPts;
     const scaleY = img.clientHeight / state.designer.pageHeightPts;
     
@@ -624,10 +609,8 @@ function renderAllFields() {
     });
     
     // Re-bind document listeners for drag/resize
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.onmousemove = handleMouseMove;
+    document.onmouseup = handleMouseUp;
 }
 
 // Select field
