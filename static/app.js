@@ -605,16 +605,17 @@ async function loadTemplate() {
     const name = prompt('Enter template name to load:');
     if (!name) return;
     try {
-        const res = await fetch('/api/v1/templates/' + name);
+        const res = await fetch('/api/v1/templates/' + encodeURIComponent(name));
         if (!res.ok) throw new Error('Template not found');
         const data = await res.json();
+        const templateData = data.template; // because the new endpoint returns {"status":"success","template": {...}}
         state.designer.templateName = name;
-        state.designer.templateDesc = data.template.description || '';
+        state.designer.templateDesc = templateData.description || '';
         state.designer.fields = {};
-        Object.entries(data.template.fields || {}).forEach(([fieldName, fieldData]) => {
+        Object.entries(templateData.fields || {}).forEach(([fieldName, fieldData]) => {
             const id = generateFieldId();
             state.designer.fields[id] = {
-                id: id, type: fieldName.includes('photo') ? 'photo' : 'signature',
+                id: id, type: fieldName.toLowerCase().includes('photo') ? 'photo' : 'signature',
                 name: fieldName, page: fieldData.page, x: fieldData.x, y: fieldData.y,
                 width: fieldData.width, height: fieldData.height, required: fieldData.required ?? true
             };

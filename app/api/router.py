@@ -270,6 +270,41 @@ async def list_templates() -> TemplatesResponse:
     return TemplatesResponse(templates=templates)
 
 
+# ── GET /templates/{template_name} ────────────────────────────────────────────
+
+
+@router.get(
+    "/templates/{template_name}",
+    summary="Get a form template by name",
+    responses={
+        200: {"content": {"application/json": {}}},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
+)
+async def get_template(template_name: str) -> JSONResponse:
+    """Get a form template by name."""
+    try:
+        service = get_service()
+        template = service.template_engine.get_template(template_name)
+        if template is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Template '{template_name}' not found",
+            )
+        # Convert to dict for response
+        template_dict = template.model_dump()
+        return JSONResponse(content={"status": "success", "template": template_dict})
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to get template: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get template: {str(e)}",
+        )
+
+
 # ── POST /templates/{template_name} ───────────────────────────────────────────
 
 
@@ -284,20 +319,15 @@ async def list_templates() -> TemplatesResponse:
 )
 async def save_template(
     template_name: str,
-    description: str = Form(default=""),
-    page_size: str = Form(default="A4"),
-    fields: str = Form(..., description="JSON string mapping field names to FieldPlacement objects"),
+    template_data: Dict[str, Any]
 ) -> JSONResponse:
     """Save or update a form template."""
     try:
-        fields_dict = json.loads(fields)
-    except json.JSONDecodeError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid JSON in fields",
-        )
+        # Get template data from JSON body
+        description = template_data.get("description", "")
+        page_size = template_data.get("page_size", "A4")
+        fields_dict = template_data.get("fields", {})
 
-    try:
         # Parse fields into FieldPlacement objects
         parsed_fields: Dict[str, FieldPlacement] = {}
         for field_name, field_data in fields_dict.items():
@@ -378,23 +408,23 @@ async def delete_template(template_name: str) -> JSONResponse:
     },
 )
 async def render_pdf_page(
-    pdf_file: UploadFile = File(...),
-    page_index: int = Form(0, description="Zero-based page index to render"),
+    pdf: UploadFile = File(...),
+    page: int = Form(0, description="Zero-based page index to render"),
 ) -> StreamingResponse:
     """Render a specific page of a PDF as a PNG image."""
-    pdf_bytes = await validate_pdf_upload(pdf_file, "pdf_file")
+    pdf_bytes = await validate_pdf_upload(pdf, "pdf")
 
     try:
         doc = pymupdf.open(stream=pdf_bytes, filetype="pdf")
-        if page_index < 0 or page_index >= len(doc):
+        if page < 0 or page >= len(doc):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Page index {page_index} out of range. PDF has {len(doc)} pages.",
+                detail=f"Page index {page} out of range. PDF has {len(doc)} pages.",
             )
 
-        page = doc[page_index]
-        page_rect = page.rect
-        pix = page.get_pixmap()
+        page_obj = doc[page]
+        page_rect = page_obj.rect
+        pix = page_obj.get_pixmap()
 
         # Prepare response with page dimensions in headers
         img_data = io.BytesIO(pix.tobytes("png"))
