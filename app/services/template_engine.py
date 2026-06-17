@@ -104,6 +104,9 @@ class TemplateEngine:
             name: Name of the template
             template: FormTemplate object to save
         """
+        # First, reload templates from disk to get the latest state
+        self.load_templates()
+        
         path = self._get_json_path()
         self._templates[name] = template
         
@@ -144,6 +147,9 @@ class TemplateEngine:
         Returns:
             True if template was deleted, False if it didn't exist
         """
+        # First, reload templates from disk to get the latest state
+        self.load_templates()
+        
         if name not in self._templates:
             return False
         
