@@ -413,6 +413,33 @@ function setupDesignerButtons() {
     document.getElementById('next-page-btn').addEventListener('click', () => navigatePage(1));
     document.getElementById('load-template-btn').addEventListener('click', loadTemplate);
     document.getElementById('save-template-btn').addEventListener('click', saveTemplate);
+    
+    // Export button
+    document.getElementById('export-template-btn').addEventListener('click', exportTemplate);
+    
+    // Import button
+    const importInput = document.getElementById('import-template-input');
+    document.getElementById('import-template-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        importInput.click();
+    });
+    
+    importInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const templateData = JSON.parse(event.target.result);
+                    importTemplate(templateData);
+                } catch (error) {
+                    alert('Invalid JSON file');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
 
     setupFieldPropertyInputs();
 }
@@ -687,6 +714,75 @@ async function loadTemplate() {
     } catch (e) {
         console.error(e);
         alert('Failed to load: ' + e.message);
+    }
+}
+
+function exportTemplate() {
+    const name = document.getElementById('template-name-input').value.trim() || 'template';
+    const fields = Object.values(state.designer.fields);
+    
+    const templateData = {
+        name: name,
+        description: document.getElementById('template-desc-input').value,
+        fields: {}
+    };
+    
+    fields.forEach(field => {
+        templateData.fields[field.name] = {
+            page: field.page,
+            x: field.x,
+            y: field.y,
+            width: field.width,
+            height: field.height,
+            required: field.required
+        };
+    });
+    
+    const json = JSON.stringify(templateData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name.replace(/[^a-z0-9_\-]/gi, '_').toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importTemplate(templateData) {
+    try {
+        if (!templateData || !templateData.name || !templateData.fields) {
+            throw new Error('Invalid template file format');
+        }
+        
+        document.getElementById('template-name-input').value = templateData.name;
+        document.getElementById('template-desc-input').value = templateData.description || '';
+        
+        state.designer.fields = {};
+        
+        Object.entries(templateData.fields).forEach(([fieldName, fieldData]) => {
+            const id = generateFieldId();
+            const fieldType = fieldName.toLowerCase().includes('photo') ? 'photo' : 'signature';
+            
+            state.designer.fields[id] = {
+                id: id,
+                type: fieldType,
+                name: fieldName,
+                page: fieldData.page,
+                x: fieldData.x,
+                y: fieldData.y,
+                width: fieldData.width,
+                height: fieldData.height,
+                required: fieldData.required !== false
+            };
+        });
+        
+        renderAllFields();
+        updateFieldsList();
+        
+        alert('Template imported successfully!');
+    } catch (e) {
+        console.error(e);
+        alert('Failed to import template: ' + e.message);
     }
 }
 

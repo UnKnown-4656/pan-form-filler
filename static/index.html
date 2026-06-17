@@ -323,15 +323,28 @@
                             <h3>Template Properties</h3>
                         </div>
                         
+                        <!-- Import/Export Buttons -->
+                        <div class="import-export-buttons">
+                            <button id="import-template-btn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M21 21H3"/></svg>
+                                Import Template
+                                <input type="file" id="import-template-input" accept=".json" class="hidden-file-input">
+                            </button>
+                            <button id="export-template-btn" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M21 21H3"/></svg>
+                                Export Template
+                            </button>
+                        </div>
+
                         <!-- Template Name -->
-                        <div class="form-group">
-                            <label class="form-label">Template Name</label>
+                        <div class="template-name-input-wrapper">
+                            <label for="template-name-input">Template Name</label>
                             <input type="text" id="template-name-input" class="text-input" placeholder="e.g., PAN_FORM_V2">
                         </div>
 
                         <!-- Description -->
-                        <div class="form-group">
-                            <label class="form-label">Description</label>
+                        <div class="template-desc-input-wrapper">
+                            <label for="template-desc-input">Description</label>
                             <input type="text" id="template-desc-input" class="text-input" placeholder="Brief description of this form">
                         </div>
 
@@ -392,6 +405,6 @@
             </div>
         </div>
     </div>
-    <script src="/static/app.js?v=1.0.3"></script>
+    <script src="/static/app.js?v=1.0.4"></script>
 </body>
 </html>
