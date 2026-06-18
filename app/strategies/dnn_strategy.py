@@ -14,7 +14,8 @@ Model files required (~10.7MB total):
 Performance: ~150–300ms per page on old i5 (CPU only).
 Accuracy: ~95%.
 """
-
+import urllib.request
+import urllib.error
 import logging
 from pathlib import Path
 from typing import List, Optional
@@ -32,7 +33,16 @@ logger = logging.getLogger(__name__)
 _PROTOTXT_NAME = "deploy.prototxt"
 _MODEL_NAME = "res10_300x300_ssd_iter_140000.caffemodel"
 
+_PROTOTXT_URL = (
+    "https://raw.githubusercontent.com/opencv/opencv/master/"
+    "samples/dnn/face_detector/deploy.prototxt"
+)
 
+_MODEL_URL = (
+    "https://github.com/opencv/opencv_3rdparty/raw/"
+    "dnn_samples_face_detector_20170830/"
+    "res10_300x300_ssd_iter_140000.caffemodel"
+)
 class DNNStrategy(PhotoDetectionStrategy):
     """
     DNN-based face detection using OpenCV's DNN module.
@@ -56,12 +66,54 @@ class DNNStrategy(PhotoDetectionStrategy):
         self._models_dir = models_dir or settings.MODELS_DIR
         self._net: Optional[cv2.dnn.Net] = None
         self._loaded = False
+    def _download_models_if_missing(self) -> bool:
+        """
+        Download DNN model files if they are missing.
 
+        Returns:
+        True if files exist after this function.
+      """
+        self._models_dir.mkdir(parents=True, exist_ok=True)
+
+        prototxt_path = self._models_dir / _PROTOTXT_NAME
+        model_path = self._models_dir / _MODEL_NAME
+
+        try:
+            if not prototxt_path.exists():
+                logger.warning(
+                "deploy.prototxt missing. Downloading..."
+                )
+                urllib.request.urlretrieve(
+                    _PROTOTXT_URL,
+                    str(prototxt_path),
+                )
+
+            if not model_path.exists():
+                logger.warning(
+                    "res10 model missing. Downloading..."
+                )
+                urllib.request.urlretrieve(
+                    _MODEL_URL,
+                    str(model_path),
+                )
+
+        except Exception as e:
+            logger.error(
+            "Failed downloading DNN model files: %s",
+            e,
+            )
+            return False
+
+        return (
+            prototxt_path.exists()
+            and model_path.exists()
+        )
     def _load_model(self) -> None:
         """Lazy-load the DNN model. Only called once."""
         if self._loaded:
             return
-
+        if not self._download_models_if_missing():
+            return
         prototxt_path = self._models_dir / _PROTOTXT_NAME
         model_path = self._models_dir / _MODEL_NAME
 
@@ -185,13 +237,11 @@ class DNNStrategy(PhotoDetectionStrategy):
             results[0].confidence if results else 0,
         )
         return results
-
     def is_available(self) -> bool:
-        """Check if both model files exist."""
-        prototxt_path = self._models_dir / _PROTOTXT_NAME
-        model_path = self._models_dir / _MODEL_NAME
-        return prototxt_path.exists() and model_path.exists()
+        if self._loaded:
+            return True
 
+        return self._download_models_if_missing()
     @property
     def name(self) -> str:
         return "dnn_ssd_resnet10"
