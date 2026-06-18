@@ -98,7 +98,7 @@ class PhotoDetector:
         # Fast path: try Haar first.
         haar_results = self._haar.detect(image, page_index)
 
-        if haar_results and haar_results[0].confidence >= 0.3:
+        if haar_results and haar_results[0].confidence >= 0.7:
             logger.debug(
                 "Auto: Haar succeeded on page %d (confidence=%.2f)",
                 page_index,
@@ -176,8 +176,10 @@ class PhotoDetector:
             best.confidence,
             best.strategy_name,
         )
-        return best
 
+
+        return best
+        
     def detect_and_extract(
         self,
         page_images: List[tuple[int, np.ndarray]],
