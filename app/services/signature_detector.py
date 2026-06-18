@@ -123,6 +123,10 @@ class SignatureDetector:
             best.confidence,
             " [LOW CONFIDENCE]" if is_low_confidence else "",
         )
+        
+        if is_low_confidence:
+            logger.warning("Rejecting signature candidate due to low confidence")
+            return None
 
         return best
 

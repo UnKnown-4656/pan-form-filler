@@ -111,12 +111,16 @@ class Settings(BaseSettings):
         default=0.6,
         description="Max signature width as fraction of page width.",
     )
+    SIG_MAX_HEIGHT_RATIO: float = Field(
+        default=0.3,
+        description="Max signature height as fraction of page height.",
+    )
     SIG_ASPECT_RATIO_MIN: float = 1.5
     SIG_ASPECT_RATIO_MAX: float = 8.0
     SIG_SOLIDITY_MAX: float = 0.7
     SIG_DENSITY_MAX: float = 0.4
     SIG_CONFIDENCE_THRESHOLD: float = Field(
-        default=0.3,
+        default=0.4,
         description="Below this confidence, warn that signature may be incorrect.",
     )
 

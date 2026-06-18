@@ -181,6 +181,10 @@ class ContourStrategy(SignatureDetectionStrategy):
             # Filter 2: Maximum width (reject full-width text blocks/tables).
             if w > roi_w * settings.SIG_MAX_WIDTH_RATIO:
                 continue
+                
+            # Filter 2.1: Maximum height (reject tall things like photos/fingerprints)
+            if h > roi_h * settings.SIG_MAX_HEIGHT_RATIO:
+                continue
 
             # Filter 3: Aspect ratio (signatures are wider than tall).
             if h == 0:
