@@ -124,6 +124,41 @@ class Settings(BaseSettings):
         description="Below this confidence, warn that signature may be incorrect.",
     )
 
+    # ── Thumb Impression Detection ───────────────────────────────────────────
+    THUMB_FOCUS_LOWER_PERCENT: float = Field(
+        default=0.6,
+        description="Search bottom N% of each page for thumb impressions.",
+    )
+    THUMB_ADAPTIVE_BLOCK_SIZE: int = 15
+    THUMB_ADAPTIVE_C: int = 10
+    THUMB_MORPH_KERNEL_SIZE: int = 5
+    THUMB_MIN_WIDTH: int = 50
+    THUMB_MIN_HEIGHT: int = 50
+    THUMB_MAX_WIDTH_RATIO: float = Field(
+        default=0.4,
+        description="Max thumb width as fraction of page width.",
+    )
+    THUMB_MAX_HEIGHT_RATIO: float = Field(
+        default=0.4,
+        description="Max thumb height as fraction of page height.",
+    )
+    THUMB_ASPECT_RATIO_MIN: float = 0.8
+    THUMB_ASPECT_RATIO_MAX: float = 1.5
+    THUMB_SOLIDITY_MIN: float = Field(
+        default=0.3,
+        description="Min solidity for thumb impressions (more solid than signatures).",
+    )
+    THUMB_SOLIDITY_MAX: float = 0.9
+    THUMB_DENSITY_MIN: float = Field(
+        default=0.1,
+        description="Min density for thumb impressions (more dense than signatures).",
+    )
+    THUMB_DENSITY_MAX: float = 0.6
+    THUMB_CONFIDENCE_THRESHOLD: float = Field(
+        default=0.35,
+        description="Below this confidence, warn that thumb impression may be incorrect.",
+    )
+
     # ── Cleanup ─────────────────────────────────────────────────────────────
     CLEANUP_TTL_HOURS: int = Field(
         default=24,

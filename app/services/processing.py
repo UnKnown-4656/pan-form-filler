@@ -18,6 +18,7 @@ from typing import Dict, Optional, Tuple
 from app.config import settings
 from app.services.photo_detector import PhotoDetector
 from app.services.signature_detector import SignatureDetector
+from app.services.thumb_detector import ThumbDetector
 from app.services.template_engine import TemplateEngine
 from app.strategies.base import DetectionResult
 from app.utils.file_manager import FileManager
@@ -43,6 +44,7 @@ class ProcessingService:
         self.pdf_converter = PDFConverter()
         self.photo_detector = PhotoDetector()
         self.signature_detector = SignatureDetector()
+        self.thumb_detector = ThumbDetector()
         self.template_engine = TemplateEngine()
         self.file_manager = FileManager()
 
@@ -92,21 +94,30 @@ class ProcessingService:
                 page_images, sig_path
             )
 
+            # Step 4: Detect and extract thumb impression (for fallback).
+            logger.info("[%s] Detecting thumb impression...", request_id[:8])
+            thumb_path = self.file_manager.get_thumb_path(request_dir)
+            thumb_result = self.thumb_detector.detect_and_extract(
+                page_images, thumb_path
+            )
+
             elapsed_ms = (time.perf_counter() - start_time) * 1000
 
             result = {
                 "request_id": request_id,
                 "photo": self._format_detection(photo_result, photo_path),
                 "signature": self._format_detection(sig_result, sig_path),
+                "thumb": self._format_detection(thumb_result, thumb_path),
                 "processing_time_ms": round(elapsed_ms, 1),
             }
 
             logger.info(
-                "[%s] Extraction complete in %.1fms — photo: %s, signature: %s",
+                "[%s] Extraction complete in %.1fms — photo: %s, signature: %s, thumb: %s",
                 request_id[:8],
                 elapsed_ms,
                 "found" if photo_result else "NOT FOUND",
                 "found" if sig_result else "NOT FOUND",
+                "found" if thumb_result else "NOT FOUND",
             )
 
             return result
@@ -173,10 +184,17 @@ class ProcessingService:
             if photo_path.exists():
                 images["photo"] = photo_path
 
+        # Use signature if found, otherwise fall back to thumb impression
         if extract_result["signature"]["found"]:
             sig_path = Path(extract_result["signature"]["path"])
             if sig_path.exists():
                 images["signature"] = sig_path
+                logger.info("[%s] Using signature for signature field", request_id[:8])
+        elif extract_result["thumb"]["found"]:
+            thumb_path = Path(extract_result["thumb"]["path"])
+            if thumb_path.exists():
+                images["signature"] = thumb_path  # Place thumb in signature field
+                logger.info("[%s] Using thumb impression for signature field (signature not found)", request_id[:8])
 
         if not images:
             logger.warning(

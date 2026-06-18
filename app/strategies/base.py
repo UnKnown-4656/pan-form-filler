@@ -18,6 +18,7 @@ class DetectionType(str, Enum):
     """Types of detectable elements."""
     PHOTO = "photo"
     SIGNATURE = "signature"
+    THUMB = "thumb"
 
 
 @dataclass

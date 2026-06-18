@@ -71,6 +71,10 @@ class FileManager:
         """Return the standard path for the extracted signature."""
         return request_dir / "signature.png"
 
+    def get_thumb_path(self, request_dir: Path) -> Path:
+        """Return the standard path for the extracted thumb impression."""
+        return request_dir / "thumb.png"
+
     def get_output_path(self, request_id: str, template_name: str) -> Path:
         """
         Return the path for the completed PDF output.
